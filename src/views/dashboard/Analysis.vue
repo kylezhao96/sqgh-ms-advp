@@ -2,62 +2,54 @@
   <div>
     <a-row :gutter="24">
       <a-col :sm="24" :md="12" :xl="6" :style="{ marginBottom: '24px' }">
-        <chart-card :loading="loading" title="总销售额" total="￥126,560">
-          <a-tooltip title="指标说明" slot="action">
+        <chart-card :loading="row1Loading" title="昨日发电量（万kWh）" :total="gpDay">
+          <a-tooltip :title="tooltipTitle" slot="action">
             <a-icon type="info-circle-o" />
           </a-tooltip>
           <div>
-            <trend flag="up" style="margin-right: 16px;">
-              <span slot="term">周同比</span>
-              12%
-            </trend>
-            <trend flag="down">
-              <span slot="term">日同比</span>
-              11%
-            </trend>
+            <mini-area :dataSource="gpDataList" :scale="gpDataScale"/>
           </div>
-          <template slot="footer">日均销售额<span>￥ 234.56</span></template>
+          <template slot="footer"><trend :flag="gpDodFlag">
+            <span slot="term">日同比</span>
+            {{ gpDodPercent }}%
+          </trend></template>
         </chart-card>
       </a-col>
       <a-col :sm="24" :md="12" :xl="6" :style="{ marginBottom: '24px' }">
-        <chart-card :loading="loading" title="访问量" :total="8846 | NumberFormat">
-          <a-tooltip title="指标说明" slot="action">
+        <chart-card :loading="row1Loading" title="昨日风速（m/s）" :total="wsDay">
+          <a-tooltip :title="tooltipTitle" slot="action">
             <a-icon type="info-circle-o" />
           </a-tooltip>
           <div>
-            <mini-area />
+            <mini-area :dataSource="wsDataList" :scale="wsDataScale"/>
           </div>
-          <template slot="footer">日访问量<span> {{ '1234' | NumberFormat }}</span></template>
+          <template slot="footer"><trend :flag="wsDodFlag">
+            <span slot="term">日同比</span>
+            {{ wsDodPercent }}%
+          </trend></template>
         </chart-card>
       </a-col>
       <a-col :sm="24" :md="12" :xl="6" :style="{ marginBottom: '24px' }">
-        <chart-card :loading="loading" title="支付笔数" :total="6560 | NumberFormat">
-          <a-tooltip title="指标说明" slot="action">
+        <chart-card :loading="row1Loading" title="日停机时间统计" :total="10 | NumberFormat">
+          <a-tooltip :title="tooltipTitle" slot="action">
             <a-icon type="info-circle-o" />
           </a-tooltip>
           <div>
             <mini-bar />
           </div>
-          <template slot="footer">转化率 <span>60%</span></template>
+          <template slot="footer">本月机组可利用率 <span>60%</span></template>
         </chart-card>
       </a-col>
       <a-col :sm="24" :md="12" :xl="6" :style="{ marginBottom: '24px' }">
-        <chart-card :loading="loading" title="运营活动效果" total="78%">
-          <a-tooltip title="指标说明" slot="action">
+        <chart-card :loading="row1Loading" title="年度计划完成情况" :total="yearRate+'%'">
+          <a-tooltip :title="tooltipTitle" slot="action">
             <a-icon type="info-circle-o" />
           </a-tooltip>
           <div>
-            <mini-progress color="rgb(19, 194, 194)" :target="80" :percentage="78" height="8px" />
+            <mini-progress color="rgb(19, 194, 194)" :target="planRate" :percentage="yearRate" height="8px" />
           </div>
           <template slot="footer">
-            <trend flag="down" style="margin-right: 16px;">
-              <span slot="term">同周比</span>
-              12%
-            </trend>
-            <trend flag="up">
-              <span slot="term">日环比</span>
-              80%
-            </trend>
+            月计划完成率 <span>{{ monthRate }}%</span>
           </template>
         </chart-card>
       </a-col>
@@ -65,33 +57,32 @@
 
     <a-card :loading="loading" :bordered="false" :body-style="{padding: '0'}">
       <div class="salesCard">
-        <a-tabs default-active-key="1" size="large" :tab-bar-style="{marginBottom: '24px', paddingLeft: '16px'}">
+        <a-tabs size="large" :active-key="activeKey" :tab-bar-style="{marginBottom: '24px', paddingLeft: '16px'}" @change="tabChange">
           <div class="extra-wrapper" slot="tabBarExtraContent">
             <div class="extra-item">
-              <a>今日</a>
-              <a>本周</a>
-              <a>本月</a>
-              <a>本年</a>
+              <a name="week" @click="handleTimeRangeSelected">本周</a>
+              <a name="month" @click="handleTimeRangeSelected">本月</a>
+              <a name="year" @click="handleTimeRangeSelected">本年</a>
             </div>
             <a-range-picker :style="{width: '256px'}" />
           </div>
-          <a-tab-pane loading="true" tab="销售额" key="1">
+          <a-tab-pane loading="true" tab="发电量" key="1">
             <a-row>
               <a-col :xl="16" :lg="12" :md="12" :sm="24" :xs="24">
-                <bar :data="barData" title="销售额排行" />
+                <bar :data="barData" title="发电量统计" />
               </a-col>
               <a-col :xl="8" :lg="12" :md="12" :sm="24" :xs="24">
-                <rank-list title="门店销售排行榜" :list="rankList"/>
+                <rank-list title="本年发电量数据排行" :list="rankList"/>
               </a-col>
             </a-row>
           </a-tab-pane>
-          <a-tab-pane tab="访问量" key="2">
+          <a-tab-pane tab="风速" key="2">
             <a-row>
               <a-col :xl="16" :lg="12" :md="12" :sm="24" :xs="24">
-                <bar :data="barData2" title="销售额趋势" />
+                <bar :data="barData2" title="风速统计" />
               </a-col>
               <a-col :xl="8" :lg="12" :md="12" :sm="24" :xs="24">
-                <rank-list title="门店销售排行榜" :list="rankList"/>
+                <rank-list title="本年风速数据排行" :list="rankList"/>
               </a-col>
             </a-row>
           </a-tab-pane>
@@ -213,6 +204,7 @@
 
 <script>
 import moment from 'moment'
+import { mapActions } from 'vuex'
 import {
   ChartCard,
   MiniArea,
@@ -225,7 +217,30 @@ import {
   MiniSmoothArea
 } from '@/components'
 import { baseMixin } from '@/store/app-mixin'
+import store from '@/store'
 
+// 发电量
+const gpDataScale = [
+  {
+    dataKey: 'x',
+    alias: '日期'
+  },
+  {
+    dataKey: 'y',
+    alias: '发电量',
+    min: 0
+  }]
+// 风速
+const wsDataScale = [
+  {
+    dataKey: 'x',
+    alias: '日期'
+  },
+  {
+    dataKey: 'y',
+    alias: '风速',
+    min: 0
+  }]
 const barData = []
 const barData2 = []
 for (let i = 0; i < 12; i += 1) {
@@ -342,8 +357,27 @@ export default {
   data () {
     return {
       loading: true,
+      row1Loading: true,
       rankList,
-
+      tooltipTitle: '',
+      // 发电量
+      gpDay: '',
+      gpDodPercent: '',
+      gpDodFlag: 'up',
+      gpDataList: [],
+      gpDataScale,
+      // 风速
+      wsDay: '',
+      wsDodPercent: '',
+      wsDodFlag: 'up',
+      wsDataList: [],
+      wsDataScale,
+      // 完成率
+      yearRate: 0,
+      monthRate: 0,
+      planRate: 0,
+      // a-tab
+      activeKey: '1',
       // 搜索用户数
       searchUserData,
       searchUserScale,
@@ -364,9 +398,69 @@ export default {
     }
   },
   created () {
-    setTimeout(() => {
-      this.loading = !this.loading
-    }, 1000)
+    // 获取发电量数据
+    this.getAnalysisData()
+  },
+  methods: {
+    ...mapActions(['GetMiniChartData', 'GetBarData']),
+    getAnalysisData () {
+      store.dispatch('GetMiniChartData')
+        .then(res => {
+          console.log(res)
+          this.getAnalysisDataSuccess(res)
+        })
+        // .catch(err => {pass})
+        .finally(() => {
+        })
+    },
+    getAnalysisDataSuccess (res) {
+      // 风速
+      // const wsDataList = list.map(x => {
+      //   return { x: x.date, y: x.davgs }
+      // })
+      this.tooltipTitle = '数据更新于 ' + res.dataList[0].date
+      this.gpDataList = res.dataList.map(x => {
+          return { x: x.date, y: x.dgp / 10000 }
+        })
+      this.wsDataList = res.dataList.map(x => {
+        return { x: x.date, y: x.davgs }
+      })
+      this.yearRate = res.yearRate
+      this.monthRate = res.monthRate
+      this.planRate = res.planRate
+      // 发电量
+      this.gpDay = res.dataList[0].dgp / 10000
+      this.gpDodFlag = res.dataList[0].dgp < res.dataList[1].dgp ? 'down' : 'up'
+      this.gpDodPercent = Math.abs(((res.dataList[0].dgp - res.dataList[1].dgp) / res.dataList[1].dgp * 100).toFixed(2))
+      // 风速
+      this.wsDay = res.dataList[0].davgs
+      this.wsDodFlag = res.dataList[0].davgs < res.dataList[1].davgs ? 'down' : 'up'
+      this.wsDodPercent = Math.abs(((res.dataList[0].davgs - res.dataList[1].davgs) / res.dataList[1].davgs * 100).toFixed(2))
+      // 修改状态
+      this.row1Loading = false
+      this.loading = false
+    },
+    tabChange (activeKey) {
+      this.activeKey = activeKey
+    },
+    handleTimeRangeSelected (e) {
+      const {
+        GetBarData
+      } = this
+      // console.log(e)
+      const params = {
+        timeRange: e.target.attributes.name.value
+      }
+      GetBarData(params)
+        .then(res => {
+        this.barData = res.data.map(x => {
+          return { x: x.date, y: x.dgp }
+        })
+        this.barData2 = res.data.map(x => {
+          return { x: x.date, y: x.davgs }
+        })
+      })
+    }
   }
 }
 </script>

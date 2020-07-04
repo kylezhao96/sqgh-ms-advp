@@ -6,8 +6,8 @@
         <a-input
           size="large"
           type="text"
-          placeholder="邮箱"
-          v-decorator="['email', {rules: [{ required: true, type: 'email', message: '请输入邮箱地址' }], validateTrigger: ['change', 'blur']}]"
+          placeholder="账号"
+          v-decorator="['account', {rules: [{ required: true, message: '请输入账号' }, { validator: this.handleAccountLength }], validateTrigger: ['change', 'blur']}]"
         ></a-input>
       </a-form-item>
 
@@ -44,38 +44,18 @@
       </a-form-item>
 
       <a-form-item>
-        <a-input size="large" placeholder="11 位手机号" v-decorator="['mobile', {rules: [{ required: true, message: '请输入正确的手机号', pattern: /^1[3456789]\d{9}$/ }, { validator: this.handlePhoneCheck } ], validateTrigger: ['change', 'blur'] }]">
-          <a-select slot="addonBefore" size="large" defaultValue="+86">
-            <a-select-option value="+86">+86</a-select-option>
-            <a-select-option value="+87">+87</a-select-option>
-          </a-select>
+        <a-input
+          size="large"
+          type="text"
+          placeholder="姓名"
+          v-decorator="['name', {rules: [{ required: true, message: '请输入姓名' }], validateTrigger: ['change', 'blur']}]">
         </a-input>
       </a-form-item>
-      <!--<a-input-group size="large" compact>
-            <a-select style="width: 20%" size="large" defaultValue="+86">
-              <a-select-option value="+86">+86</a-select-option>
-              <a-select-option value="+87">+87</a-select-option>
-            </a-select>
-            <a-input style="width: 80%" size="large" placeholder="11 位手机号"></a-input>
-          </a-input-group>-->
 
-      <a-row :gutter="16">
-        <a-col class="gutter-row" :span="16">
-          <a-form-item>
-            <a-input size="large" type="text" placeholder="验证码" v-decorator="['captcha', {rules: [{ required: true, message: '请输入验证码' }], validateTrigger: 'blur'}]">
-              <a-icon slot="prefix" type="mail" :style="{ color: 'rgba(0,0,0,.25)' }"/>
-            </a-input>
-          </a-form-item>
-        </a-col>
-        <a-col class="gutter-row" :span="8">
-          <a-button
-            class="getCaptcha"
-            size="large"
-            :disabled="state.smsSendBtn"
-            @click.stop.prevent="getCaptcha"
-            v-text="!state.smsSendBtn && '获取验证码'||(state.time+' s')"></a-button>
-        </a-col>
-      </a-row>
+      <a-form-item>
+        <a-input size="large" placeholder="单位名" v-decorator="['company']">
+        </a-input>
+      </a-form-item>
 
       <a-form-item>
         <a-button
@@ -95,7 +75,9 @@
 </template>
 
 <script>
-import { getSmsCaptcha } from '@/api/login'
+
+import { mapActions } from 'vuex'
+import md5 from 'md5'
 
 const levelNames = {
   0: '低',
@@ -126,7 +108,6 @@ export default {
 
       state: {
         time: 60,
-        smsSendBtn: false,
         passwordLevel: 0,
         passwordLevelChecked: false,
         percent: 10,
@@ -147,6 +128,17 @@ export default {
     }
   },
   methods: {
+    ...mapActions(['Register']),
+    handleAccountLength (rule, value, callback) {
+      if (value.length !== 8) {
+        callback(new Error('账号必须为8位'))
+      }
+      if (/[^0-9_]/.test(value)) {
+        callback(new Error('账号必须为纯数字'))
+      }
+      callback()
+    },
+
     handlePasswordLevel (rule, value, callback) {
       let level = 0
 
@@ -179,7 +171,7 @@ export default {
 
     handlePasswordCheck (rule, value, callback) {
       const password = this.form.getFieldValue('password')
-      console.log('value', value)
+      // console.log('value', value)
       if (value === undefined) {
         callback(new Error('请输入密码'))
       }
@@ -189,76 +181,33 @@ export default {
       callback()
     },
 
-    handlePhoneCheck (rule, value, callback) {
-      console.log('handlePhoneCheck, rule:', rule)
-      console.log('handlePhoneCheck, value', value)
-      console.log('handlePhoneCheck, callback', callback)
-
-      callback()
-    },
-
     handlePasswordInputClick () {
-      if (!this.isMobile()) {
-        this.state.passwordLevelChecked = true
-        return
-      }
+      // if (!this.isMobile()) {
+      //   this.state.passwordLevelChecked = true
+      //   return
+      // }
+      // this.state.passwordLevelChecked = false
       this.state.passwordLevelChecked = false
     },
 
     handleSubmit () {
-      const { form: { validateFields }, state, $router } = this
-      validateFields({ force: true }, (err, values) => {
+      const { form: { validateFields }, state, Register } = this
+      validateFields(['account', 'password', 'password2', 'name', 'company'], { force: true }, (err, values) => {
         if (!err) {
+          const registerParams = { ...values }
+          delete registerParams.password2
           state.passwordLevelChecked = false
-          $router.push({ name: 'registerResult', params: { ...values } })
+          registerParams.password = md5(values.password)
+          console.log(registerParams)
+          Register(registerParams)
+            .then(res => this.RegisterSuccess(res))
+            .catch(err => this.requestFailed(err))
         }
       })
     },
 
-    getCaptcha (e) {
-      e.preventDefault()
-      const { form: { validateFields }, state, $message, $notification } = this
-
-      validateFields(['mobile'], { force: true },
-        (err, values) => {
-          if (!err) {
-            state.smsSendBtn = true
-
-            const interval = window.setInterval(() => {
-              if (state.time-- <= 0) {
-                state.time = 60
-                state.smsSendBtn = false
-                window.clearInterval(interval)
-              }
-            }, 1000)
-
-            const hide = $message.loading('验证码发送中..', 0)
-
-            getSmsCaptcha({ mobile: values.mobile }).then(res => {
-              setTimeout(hide, 2500)
-              $notification['success']({
-                message: '提示',
-                description: '验证码获取成功，您的验证码为：' + res.result.captcha,
-                duration: 8
-              })
-            }).catch(err => {
-              setTimeout(hide, 1)
-              clearInterval(interval)
-              state.time = 60
-              state.smsSendBtn = false
-              this.requestFailed(err)
-            })
-          }
-        }
-      )
-    },
-    requestFailed (err) {
-      this.$notification['error']({
-        message: '错误',
-        description: ((err.response || {}).data || {}).message || '请求出现错误，请稍后再试',
-        duration: 4
-      })
-      this.registerBtn = false
+    RegisterSuccess (res) {
+      this.$router.push({ name: 'registerResult', params: { res } })
     }
   },
   watch: {
