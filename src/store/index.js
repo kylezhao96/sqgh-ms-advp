@@ -4,6 +4,7 @@ import Vuex from 'vuex'
 import app from './modules/app'
 import user from './modules/user'
 import cdf from './modules/cdf'
+import gzp from './modules/gzp'
 
 // default router permission control
 import permission from './modules/permission'
@@ -19,6 +20,7 @@ export default new Vuex.Store({
     app,
     user,
     cdf,
+    gzp,
     permission
   },
   state: {

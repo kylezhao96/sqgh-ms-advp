@@ -9,11 +9,10 @@ const api = {
 
 export default api
 
-export function getCdfsList (days, parameter) {
+export function getCdfsList (days) {
   return request({
     url: api.cdfsDays + days,
-    method: 'get',
-    params: parameter
+    method: 'get'
   })
 }
 
