@@ -94,13 +94,31 @@
             title="工作票列表"
             :body-style="{ padding: 0 }"
           >
-            <a slot="extra">添加</a>
+            <!--            <a slot="extra" >添加</a>-->
+            <router-link
+              to="/gzp"
+              slot="extra"
+            >
+              添加
+            </router-link>
             <div>
-              <a-table :columns="gzpColumns" :data-source="gzpsList">
-                <!--                <a slot="action" slot-scope="text" href="javascript:;">Delete</a>-->
-                <p slot="expandedRowRender" slot-scope="record" style="margin: 0">
-                  {{ record.description }}
-                </p>
+              <a-table
+                :columns="gzpColumns"
+                :data-source="gzpsList">
+                <div slot="expandedRowRender" slot-scope="detail" style="margin: 0">
+                  <a-descriptions
+                    v-for="wtm in detail.wtms"
+                    :key="wtm.id"
+                    :title="'A'+wtm.wt_id+' 风机'"
+                    :size="size">
+                    <a-descriptions-item label="停机时间">
+                      {{ wtm.stop_time }}
+                    </a-descriptions-item>
+                    <a-descriptions-item label="启机时间">
+                      {{ wtm.start_time }}
+                    </a-descriptions-item>
+                  </a-descriptions>
+                </div>
               </a-table>
             </div>
           </a-card>
@@ -138,7 +156,8 @@ import {
   MiniArea,
   MiniBar,
   MiniProgress,
-  ChartCard
+  ChartCard,
+  Trend
 } from '@/components'
 
 import { getRoleList, getServiceList } from '@/api/manage'
@@ -150,7 +169,8 @@ const gzpColumns = [
   {
     dataIndex: 'id',
     key: 'id',
-    title: '工作票号'
+    title: '工作票号',
+    width: '200px'
   },
   {
     title: '工作负责人',
@@ -217,7 +237,8 @@ export default {
     MiniArea,
     MiniBar,
     MiniProgress,
-    ChartCard
+    ChartCard,
+    Trend
   },
   data () {
     return {
@@ -227,6 +248,8 @@ export default {
       tooltipTitle: '',
       // 工作票表格
       gzpColumns,
+      pagination: {},
+      tableLoading: false,
       // 发电量
       gpDay: '',
       gpDodPercent: '',
@@ -382,12 +405,6 @@ export default {
         })
         // .catch(err => {pass})
         .finally(() => {
-        })
-    },
-    getTeams () {
-      this.$http.get('/workplace/teams')
-        .then(res => {
-          this.teams = res.result
         })
     },
     initRadar () {

@@ -260,6 +260,23 @@ export const asyncRouterMap = [
             ]
           }
         ]
+      },
+
+      // 工作票
+      {
+        path: '/gzp',
+        component: RouteView,
+        redirect: '/gzp/gzpform',
+        name: 'gzp',
+        meta: { title: '工作票', icon: 'file-protect', keepAlive: true, permission: [ 'gzp' ] },
+        children: [
+          {
+            path: '/gzp/gzpform',
+            name: 'gzpform',
+            component: () => import('@/views/gzp/Form/GzpForm'),
+            meta: { title: '添加工作票', keepAlive: true, permission: [ 'gzp' ] }
+          }
+        ]
       }
 
       // other

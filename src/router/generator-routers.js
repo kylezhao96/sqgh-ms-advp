@@ -18,6 +18,9 @@ const constantRouterComponents = {
   'Workplace': () => import('@/views/dashboard/Workplace'),
   'Analysis': () => import('@/views/dashboard/Analysis'),
 
+  // 工作票
+  'GzpForm': () => import('@/views/gzp/Form/GzpForm'),
+
   // form
   'BasicForm': () => import('@/views/form/BasicForm'),
   'StepForm': () => import('@/views/form/stepForm/StepForm'),
@@ -70,7 +73,16 @@ const rootRouter = {
   meta: {
     title: '首页'
   },
-  children: []
+  children: [
+    {
+      path: '/dashboard',
+      component: RouteView,
+      name: 'dashboard',
+      redirect: '/dashboard/workplace',
+      meta: { title: '仪表盘', icon: 'dashboard', permission: ['dashboard'] },
+      children: []
+    }
+  ]
 }
 
 /**

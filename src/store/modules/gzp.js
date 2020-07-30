@@ -21,7 +21,7 @@ const gzp = {
         if (state.gzpsList.length === 0) {
           getTodayGzpsList().then(response => {
             console.log(response)
-            commit('SET_GZPSLIST', { gzpsList: response.result.gzpsList })
+            commit('SET_GZPSLIST', { gzpsList: response.result })
             resolve({
               gzpsList: state.gzpsList
             })
