@@ -4,7 +4,6 @@
       name="file"
       :multiple="true"
       action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
-      @change="handleChange"
     >
       <p class="ant-upload-drag-icon">
         <a-icon type="inbox" />
@@ -90,6 +89,7 @@
               'members',
               {rules: [{ required: true, message: '工作班成员不可为空' }]}
             ]"
+            mode="multiple"
             name="members"
             show-search
             placeholder="输入工作班成员"
@@ -107,68 +107,79 @@
           </a-select>
         </a-form-item>
         <a-form-item
-          label="起止日期"
+          label="计划工作时间"
           :labelCol="{lg: {span: 7}, sm: {span: 7}}"
           :wrapperCol="{lg: {span: 10}, sm: {span: 17} }">
           <a-range-picker
-            name="buildTime"
+            name="planTime"
             style="width: 100%"
+            :show-time="{ format: 'HH:mm' }"
+            format="YYYY-MM-DD HH:mm"
             v-decorator="[
               'buildTime',
               {rules: [{ required: true, message: '请选择起止日期' }]}
             ]" />
         </a-form-item>
         <a-form-item
-          label="目标描述"
+          label="风机号"
+          :labelCol="{lg: {span: 7}, sm: {span: 7}}"
+          :wrapperCol="{lg: {span: 10}, sm: {span: 17} }">
+          <a-select
+            mode="tags"
+            style="width: 100%"
+            :token-separators="[',']"
+            v-decorator="[
+              'wt',
+              {rules: [{ required: true, message: '请输入目标描述' }]}
+            ]" >
+            <a-select-option
+              v-for="i in 40"
+              :key="String(i)">
+              {{'A' + String(i).padStart(2,'0') }}
+            </a-select-option>
+          </a-select>
+        </a-form-item>
+        <a-form-item
+          label="工作任务"
           :labelCol="{lg: {span: 7}, sm: {span: 7}}"
           :wrapperCol="{lg: {span: 10}, sm: {span: 17} }">
           <a-textarea
             rows="4"
-            placeholder="请输入你阶段性工作目标"
+            placeholder="请输入本次工作任务"
             v-decorator="[
-              'description',
+              'task',
               {rules: [{ required: true, message: '请输入目标描述' }]}
             ]" />
         </a-form-item>
         <a-form-item
-          label="衡量标准"
+          label="是否停机"
           :labelCol="{lg: {span: 7}, sm: {span: 7}}"
           :wrapperCol="{lg: {span: 10}, sm: {span: 17} }">
-          <a-textarea
-            rows="4"
-            placeholder="请输入衡量标准"
-            v-decorator="[
-              'type',
-              {rules: [{ required: true, message: '请输入衡量标准' }]}
-            ]" />
+            <a-radio-group
+              name="radioGroup"
+              v-decorator="['terminalWt', { initialValue:   1 }]" >
+              <a-radio :value="1">
+                停机
+              </a-radio>
+              <a-radio :value="2">
+                不停机
+              </a-radio>
+            </a-radio-group>
         </a-form-item>
         <a-form-item
-          label="客户"
+          label="是否停电"
           :labelCol="{lg: {span: 7}, sm: {span: 7}}"
           :wrapperCol="{lg: {span: 10}, sm: {span: 17} }">
-          <a-input
-            placeholder="请描述你服务的客户，内部客户直接 @姓名／工号"
-            v-decorator="[
-              'customer',
-              {rules: [{ required: true, message: '请描述你服务的客户' }]}
-            ]" />
-        </a-form-item>
-        <a-form-item
-          label="邀评人"
-          :labelCol="{lg: {span: 7}, sm: {span: 7}}"
-          :wrapperCol="{lg: {span: 10}, sm: {span: 17} }"
-          :required="false"
-        >
-          <a-input placeholder="请直接 @姓名／工号，最多可邀请 5 人" />
-        </a-form-item>
-        <a-form-item
-          label="权重"
-          :labelCol="{lg: {span: 7}, sm: {span: 7}}"
-          :wrapperCol="{lg: {span: 10}, sm: {span: 17} }"
-          :required="false"
-        >
-          <a-input-number :min="0" :max="100" />
-          <span> %</span>
+          <a-radio-group
+            name="radioGroup"
+            v-decorator="['terminalPower', { initialValue: 2 }]">
+            <a-radio :value="1">
+              停电
+            </a-radio>
+            <a-radio :value="2">
+              不停电
+            </a-radio>
+          </a-radio-group>
         </a-form-item>
         <a-form-item
           label="目标公开"
