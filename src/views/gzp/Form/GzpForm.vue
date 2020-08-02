@@ -16,16 +16,18 @@
       </p>
     </a-upload-dragger>
     <a-card :body-style="{padding: '24px 32px'}" :bordered="false">
-      <a-form @submit="handleSubmit" :form="form">
-        <a-form-item
+      <a-form-model
+        layout="horizontal"
+        ref="form"
+        :model="form"
+        :rules="rules"
+        :label-col="labelCol"
+        :wrapper-col="wrapperCol">
+        <a-form-model-item
           label="单位"
-          :labelCol="{lg: {span: 7}, sm: {span: 7}}"
-          :wrapperCol="{lg: {span: 10}, sm: {span: 17} }">
+          prop="firm">
           <a-select
-            v-decorator="[
-              'firm',
-              {rules: [{ required: true, message: '请输入标题' }]}
-            ]"
+            v-model="form.firm"
             name="name"
             show-search
             placeholder="输入单位名"
@@ -41,28 +43,21 @@
               {{ firmItem }}
             </a-select-option>
           </a-select>
-        </a-form-item>
-        <a-form-item
+        </a-form-model-item>
+        <a-form-model-item
           label="工作票号"
-          :labelCol="{lg: {span: 7}, sm: {span: 7}}"
-          :wrapperCol="{lg: {span: 10}, sm: {span: 17} }">
+          prop="gzpId"
+        >
           <a-input
-            v-decorator="[
-              'gzpId',
-              {rules: [{ required: true, message: '请输入票号' }]}
-            ]"
-            :max-length="9"
+            v-model="form.gzpId"
             addon-before="FJGZ-SD-SQ-" />
-        </a-form-item>
-        <a-form-item
+        </a-form-model-item>
+        <a-form-model-item
           label="工作负责人"
-          :labelCol="{lg: {span: 7}, sm: {span: 7}}"
-          :wrapperCol="{lg: {span: 10}, sm: {span: 17} }">
+          prop="manager"
+        >
           <a-select
-            v-decorator="[
-              'manager',
-              {rules: [{ required: true, message: '请输入工作负责人' }]}
-            ]"
+            v-model="form.manager"
             name="manager"
             show-search
             placeholder="输入工作负责人"
@@ -79,16 +74,13 @@
               {{ managerItem }}
             </a-select-option>
           </a-select>
-        </a-form-item>
-        <a-form-item
+        </a-form-model-item>
+        <a-form-model-item
           label="工作班成员"
-          :labelCol="{lg: {span: 7}, sm: {span: 7}}"
-          :wrapperCol="{lg: {span: 10}, sm: {span: 17} }">
+          prop="members"
+        >
           <a-select
-            v-decorator="[
-              'members',
-              {rules: [{ required: true, message: '工作班成员不可为空' }]}
-            ]"
+            v-model="form.members"
             mode="multiple"
             name="members"
             show-search
@@ -105,74 +97,68 @@
               {{ managerItem }}
             </a-select-option>
           </a-select>
-        </a-form-item>
-        <a-form-item
+        </a-form-model-item>
+        <a-form-model-item
           label="计划工作时间"
-          :labelCol="{lg: {span: 7}, sm: {span: 7}}"
-          :wrapperCol="{lg: {span: 10}, sm: {span: 17} }">
+          prop="'planTimeRange"
+        >
           <a-range-picker
             name="planTime"
             style="width: 100%"
             :show-time="{ format: 'HH:mm' }"
             format="YYYY-MM-DD HH:mm"
-            v-decorator="[
-              'buildTime',
-              {rules: [{ required: true, message: '请选择起止日期' }]}
-            ]" />
-        </a-form-item>
-        <a-form-item
+            v-model="form.planTimeRange"/>
+        </a-form-model-item>
+        <a-form-model-item
           label="风机号"
-          :labelCol="{lg: {span: 7}, sm: {span: 7}}"
-          :wrapperCol="{lg: {span: 10}, sm: {span: 17} }">
+          prop="wtId"
+        >
           <a-select
+            v-model="form.wtId"
             mode="tags"
             style="width: 100%"
-            :token-separators="[',']"
-            v-decorator="[
-              'wt',
-              {rules: [{ required: true, message: '请输入目标描述' }]}
-            ]" >
+            :token-separators="[',','、','，']"
+            @change="handleWtIdChange"
+          >
             <a-select-option
               v-for="i in 40"
-              :key="String(i)">
-              {{'A' + String(i).padStart(2,'0') }}
+              :key="'A' + String(i).padStart(2,'0')">
+              {{ 'A' + String(i).padStart(2,'0') }}
             </a-select-option>
           </a-select>
-        </a-form-item>
-        <a-form-item
+        </a-form-model-item>
+        <a-form-model-item
           label="工作任务"
-          :labelCol="{lg: {span: 7}, sm: {span: 7}}"
-          :wrapperCol="{lg: {span: 10}, sm: {span: 17} }">
+          prop="task"
+        >
           <a-textarea
+            v-model="form.task"
             rows="4"
             placeholder="请输入本次工作任务"
-            v-decorator="[
-              'task',
-              {rules: [{ required: true, message: '请输入目标描述' }]}
-            ]" />
-        </a-form-item>
-        <a-form-item
+          />
+        </a-form-model-item>
+        <a-form-model-item
           label="是否停机"
-          :labelCol="{lg: {span: 7}, sm: {span: 7}}"
-          :wrapperCol="{lg: {span: 10}, sm: {span: 17} }">
-            <a-radio-group
-              name="radioGroup"
-              v-decorator="['terminalWt', { initialValue:   1 }]" >
-              <a-radio :value="1">
-                停机
-              </a-radio>
-              <a-radio :value="2">
-                不停机
-              </a-radio>
-            </a-radio-group>
-        </a-form-item>
-        <a-form-item
-          label="是否停电"
-          :labelCol="{lg: {span: 7}, sm: {span: 7}}"
-          :wrapperCol="{lg: {span: 10}, sm: {span: 17} }">
+          prop="terminalWt"
+        >
           <a-radio-group
             name="radioGroup"
-            v-decorator="['terminalPower', { initialValue: 2 }]">
+            v-model="form.terminalWt">
+            <a-radio :value="1">
+              停机
+            </a-radio>
+            <a-radio :value="2">
+              不停机
+            </a-radio>
+          </a-radio-group>
+        </a-form-model-item>
+        <a-form-model-item
+          label="是否停电"
+          prop="terminalPower"
+        >
+          <a-radio-group
+            name="radioGroup"
+            v-model="form.terminalPower">
             <a-radio :value="1">
               停电
             </a-radio>
@@ -180,35 +166,15 @@
               不停电
             </a-radio>
           </a-radio-group>
-        </a-form-item>
-        <a-form-item
-          label="目标公开"
-          :labelCol="{lg: {span: 7}, sm: {span: 7}}"
-          :wrapperCol="{lg: {span: 10}, sm: {span: 17} }"
-          :required="false"
-          help="客户、邀评人默认被分享"
-        >
-          <a-radio-group v-decorator="['target', { initialValue: 1 }]">
-            <a-radio :value="1">公开</a-radio>
-            <a-radio :value="2">部分公开</a-radio>
-            <a-radio :value="3">不公开</a-radio>
-          </a-radio-group>
-          <a-form-item v-show="form.getFieldValue('target') === 2">
-            <a-select mode="multiple">
-              <a-select-option value="4">同事一</a-select-option>
-              <a-select-option value="5">同事二</a-select-option>
-              <a-select-option value="6">同事三</a-select-option>
-            </a-select>
-          </a-form-item>
-        </a-form-item>
-        <a-form-item
-          :wrapperCol="{ span: 24 }"
+        </a-form-model-item>
+        <a-form-model-item
           style="text-align: center"
+          :wrapper-col="{ span: 14, offset: 4 }"
         >
           <a-button htmlType="submit" type="primary">提交</a-button>
           <a-button style="margin-left: 8px">保存</a-button>
-        </a-form-item>
-      </a-form>
+        </a-form-model-item>
+      </a-form-model>
     </a-card>
   </page-header-wrapper>
 </template>
@@ -247,10 +213,57 @@ function fetchUserList (value, callback) {
 }
 
 export default {
-  name: 'BaseForm',
+  name: 'GzpForm',
   data () {
+    const validateManager = (rule, value, callback) => {
+      console.log(value)
+      if (value === undefined) {
+        callback(new Error('工作班负责人不可为空'))
+      } else {
+        for (const item of this.form.members) {
+          if (item.label.trim() === value.label.trim()) {
+            callback(new Error('工作负责人不可与工作班成员重复'))
+          }
+        }
+        callback()
+      }
+    }
+    const validateMembers = (rule, value, callback) => {
+      if (value.length === 0) {
+        callback(new Error('工作班成员不可为空'))
+      } else {
+        for (const item of value) {
+          if (item.label.trim() === this.form.manager.label.trim()) {
+            callback(new Error('工作负责人不可与工作班成员重复'))
+          }
+        }
+        callback()
+      }
+    }
     return {
-      form: this.$form.createForm(this),
+      labelCol: { lg: { span: 7 }, sm: { span: 7 } },
+      wrapperCol: { lg: { span: 10 }, sm: { span: 17 } },
+      form: {
+        terminalWt: 1,
+        terminalPower: 2,
+        members: []
+      },
+      rules: {
+        firm: [
+          { required: true, message: '工作单位不可为空', trigger: 'blur' }
+        ],
+        gzpId: [
+          { required: true, min: 9, max: 9, message: '请输入正确的工作票号', trigger: 'blur' }
+        ],
+        manager: [{ validator: validateManager, trigger: ['change', 'blur'] }],
+        members: [{ validator: validateMembers, trigger: ['change', 'blur'] }],
+        wtId: [
+          { required: true, message: '请选择风机', trigger: 'blur' }
+        ],
+        task: [
+          { required: true, min: 9, max: 9, message: '请输入工作任务', trigger: 'blur' }
+        ]
+      },
       // 单位
       firmList: [],
       firmFetching: false,
@@ -261,8 +274,8 @@ export default {
   },
   mounted () {
     fetchFirmList('', data => (this.firmList = data))
-    fetchNewGzpId(data => (this.form.setFieldsValue({ gzpId: data })))
     fetchUserList('', data => (this.managerList = data))
+    fetchNewGzpId(data => (this.$set(this.form, 'gzpId', data)))
   },
   methods: {
     // handler
@@ -282,12 +295,21 @@ export default {
       this.managerFetching = true
       fetchUserList(value, data => {
         this.managerFetching = false
-        if (data === []) {
-          this.form.setFieldsValue({ manager: value })
-        }
+        // if (data === []) {
+        //   this.form.manager = value
+        // }
         this.managerList = data
         }
       )
+    },
+    handleWtIdChange (value) {
+      console.log(value)
+      const regex = /^A[0-4][0-9]?$/
+      let res = value.filter(i => regex.test(i)).filter(i => Number(i.slice(1)) <= 40).filter(i => Number(i.slice(1)) <= 40)
+      res = res.map(i => {
+        return 'A' + i.slice(1).padStart(2, '0')
+      })
+      this.$set(this.form, 'wtId', Array.from(new Set(res)))
     }
   }
 }
