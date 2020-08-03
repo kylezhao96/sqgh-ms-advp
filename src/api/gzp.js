@@ -5,7 +5,8 @@ const api = {
   gzps: '/api/gzps',
   gzpstoday: '/api/gzps/today',
   firms: '/api/firms',
-  newgzpid: '/api/gzp/id/new'
+  newgzpid: '/api/gzp/id/new',
+  newgzp: '/api/gzp/new'
 }
 
 export default api
@@ -39,5 +40,16 @@ export function getNewGzpId () {
   return request({
     url: api.newgzpid,
     method: 'get'
+  })
+}
+
+export function submitNewGzp (parameter) {
+  return request({
+    url: api.newgzp,
+    method: 'post',
+    data: parameter,
+    headers: {
+      'Content-Type': 'application/json;charset=UTF-8'
+    }
   })
 }

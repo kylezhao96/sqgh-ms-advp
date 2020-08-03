@@ -53,6 +53,20 @@
             addon-before="FJGZ-SD-SQ-" />
         </a-form-model-item>
         <a-form-model-item
+          label="班组"
+          prop="group"
+        >
+          <a-radio-group
+            v-model="form.group">
+            <a-radio value="检修班组">
+              检修班组
+            </a-radio>
+            <a-radio value="运行班组">
+              运行班组
+            </a-radio>
+          </a-radio-group>
+        </a-form-model-item>
+        <a-form-model-item
           label="工作负责人"
           prop="manager"
         >
@@ -100,7 +114,7 @@
         </a-form-model-item>
         <a-form-model-item
           label="计划工作时间"
-          prop="'planTimeRange"
+          prop="planTimeRange"
         >
           <a-range-picker
             name="planTime"
@@ -108,6 +122,30 @@
             :show-time="{ format: 'HH:mm' }"
             format="YYYY-MM-DD HH:mm"
             v-model="form.planTimeRange"/>
+        </a-form-model-item>
+        <a-form-model-item
+          label="工作类型"
+          prop="type"
+        >
+          <a-radio-group
+            name="radioGroup"
+            v-model="form.type">
+            <a-radio value="维护">
+              维护
+            </a-radio>
+            <a-radio value="故障">
+              故障
+            </a-radio>
+          </a-radio-group>
+        </a-form-model-item>
+        <a-form-model-item
+          label="故障信息"
+          prop="error"
+        >
+          <a-input-group compact v-model="form.error" >
+            <a-input style="width: 40%" placeholder="故障代码" :disabled="form.type == '维护'" />
+            <a-input style="width: 60%" placeholder="故障名称" :disabled="form.type == '维护'" />
+          </a-input-group>
         </a-form-model-item>
         <a-form-model-item
           label="风机号"
@@ -128,6 +166,24 @@
           </a-select>
         </a-form-model-item>
         <a-form-model-item
+          label="工作位置"
+          prop="position"
+        >
+          <a-radio-group
+            name="radioGroup"
+            v-model="form.position">
+            <a-radio value="整机">
+              整机
+            </a-radio>
+            <a-radio value="塔基">
+              塔基
+            </a-radio>
+            <a-radio value="机舱">
+              机舱
+            </a-radio>
+          </a-radio-group>
+        </a-form-model-item>
+        <a-form-model-item
           label="工作任务"
           prop="task"
         >
@@ -144,10 +200,10 @@
           <a-radio-group
             name="radioGroup"
             v-model="form.terminalWt">
-            <a-radio :value="1">
+            <a-radio value="停机">
               停机
             </a-radio>
-            <a-radio :value="2">
+            <a-radio value="不停机">
               不停机
             </a-radio>
           </a-radio-group>
@@ -159,10 +215,10 @@
           <a-radio-group
             name="radioGroup"
             v-model="form.terminalPower">
-            <a-radio :value="1">
+            <a-radio value="停电">
               停电
             </a-radio>
-            <a-radio :value="2">
+            <a-radio value="不停电">
               不停电
             </a-radio>
           </a-radio-group>
@@ -171,7 +227,7 @@
           style="text-align: center"
           :wrapper-col="{ span: 14, offset: 4 }"
         >
-          <a-button htmlType="submit" type="primary">提交</a-button>
+          <a-button @click="handleSubmit('form')" type="primary" :disabled="submitDisabled">提交</a-button>
           <a-button style="margin-left: 8px">保存</a-button>
         </a-form-model-item>
       </a-form-model>
@@ -182,6 +238,8 @@
 <script>
 import { getFirmList, getNewGzpId } from '@/api/gzp'
 import { getUsersList } from '@/api/user'
+import { mapActions } from 'vuex'
+// import store from '@/store'
 
 let currentValue
 
@@ -243,11 +301,8 @@ export default {
     return {
       labelCol: { lg: { span: 7 }, sm: { span: 7 } },
       wrapperCol: { lg: { span: 10 }, sm: { span: 17 } },
-      form: {
-        terminalWt: 1,
-        terminalPower: 2,
-        members: []
-      },
+      submitDisabled: false,
+      form: {},
       rules: {
         firm: [
           { required: true, message: '工作单位不可为空', trigger: 'blur' }
@@ -261,7 +316,10 @@ export default {
           { required: true, message: '请选择风机', trigger: 'blur' }
         ],
         task: [
-          { required: true, min: 9, max: 9, message: '请输入工作任务', trigger: 'blur' }
+          { required: true, message: '请输入工作任务', trigger: 'blur' }
+        ],
+        planTimeRange: [
+          { required: true, message: '请选择工作时间', trigger: 'blur' }
         ]
       },
       // 单位
@@ -273,17 +331,31 @@ export default {
     }
   },
   mounted () {
+    this.form = this.savedForm
     fetchFirmList('', data => (this.firmList = data))
     fetchUserList('', data => (this.managerList = data))
     fetchNewGzpId(data => (this.$set(this.form, 'gzpId', data)))
   },
+  computed: {
+    savedForm () {
+      return this.$store.getters.gzpForm
+    }
+  },
   methods: {
+    ...mapActions(['SaveGzpForm', 'SubmitGzpForm', 'GetGzpForm']),
     // handler
-    handleSubmit (e) {
-      e.preventDefault()
-      this.form.validateFields((err, values) => {
-        if (!err) {
-          console.log('Received values of form: ', values)
+    handleSubmit (form) {
+      this.submitDisabled = true
+      this.$refs[form].validate(valid => {
+        if (valid) {
+          this.SubmitGzpForm(this.form)
+            .then(res => alert(res))
+            .catch(error => alert(error))
+            .finally(() => {
+              this.submitDisabled = false
+            })
+        } else {
+          return false
         }
       })
     },
