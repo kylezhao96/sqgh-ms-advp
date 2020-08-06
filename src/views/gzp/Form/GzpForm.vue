@@ -224,19 +224,38 @@
           </a-radio-group>
         </a-form-model-item>
         <a-form-model-item
+          label="天气信息"
+          prop="weather"
+        >
+          <a-input-group>
+            <a-row type="flex" justify="space-between">
+              <a-col :span="8">
+                <a-input v-model="form.weather" />
+              </a-col>
+              <a-col :span="7">
+                <a-input v-model="form.windSpeed" suffix="m/s"/>
+              </a-col>
+              <a-col :span="7">
+                <a-input v-model="form.tmp" suffix="℃"/>
+              </a-col>
+            </a-row>
+          </a-input-group>
+        </a-form-model-item>
+        <a-form-model-item
           style="text-align: center"
           :wrapper-col="{ span: 14, offset: 4 }"
         >
           <a-button @click="handleSubmit('form')" type="primary" :disabled="submitDisabled">提交</a-button>
           <a-button style="margin-left: 8px">保存</a-button>
         </a-form-model-item>
+
       </a-form-model>
     </a-card>
   </page-header-wrapper>
 </template>
 
 <script>
-import { getFirmList, getNewGzpId } from '@/api/gzp'
+import { getFirmList, getNewGzpId, getWeather } from '@/api/gzp'
 import { getUsersList } from '@/api/user'
 import { mapActions } from 'vuex'
 // import store from '@/store'
@@ -266,6 +285,11 @@ function fetchUserList (value, callback) {
     value: value
   }
   getUsersList(params).then(response => {
+    callback(response.result)
+  })
+}
+function fetchWeather (callback) {
+  getWeather().then(response => {
     callback(response.result)
   })
 }
@@ -320,7 +344,10 @@ export default {
         ],
         planTimeRange: [
           { required: true, message: '请选择工作时间', trigger: 'blur' }
-        ]
+        ],
+        weather: [{ required: true, message: '请输入天气', trigger: 'blur' }],
+        windSpeed: [{ required: true, message: '请输入风速', trigger: 'blur' }],
+        tmp: [{ required: true, message: '请输入温度', trigger: 'blur' }]
       },
       // 单位
       firmList: [],
@@ -335,6 +362,11 @@ export default {
     fetchFirmList('', data => (this.firmList = data))
     fetchUserList('', data => (this.managerList = data))
     fetchNewGzpId(data => (this.$set(this.form, 'gzpId', data)))
+    fetchWeather(data => {
+      this.$set(this.form, 'weather', data.cond_txt)
+      this.$set(this.form, 'windSpeed', data.wind_spd)
+      this.$set(this.form, 'tmp', data.tmp)
+    })
   },
   computed: {
     savedForm () {
