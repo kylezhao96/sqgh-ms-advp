@@ -12,8 +12,33 @@ const gzp = {
       type: '维护',
       position: '整机',
       group: '检修班组',
-      members: []
-    }
+      members: [],
+      statistics: [],
+      safeMs_in: [{
+        txt: '出车前检查行车车辆安全',
+        id: 1
+      }],
+      safeMs_out: [
+        {
+          txt: '作业人员正确佩戴个人劳动防护用品。',
+          id: 1
+        },
+        {
+          txt: '就地进行打到停机维护状态。',
+          id: 2
+        }]
+    },
+    statistics: [
+      {
+        task: '齿轮箱散热点击更换',
+        num: 24,
+        id: 1
+      },
+      {
+        task: '第三季度巡视',
+        num: 40,
+        id: 2
+      }]
   },
 
   mutations: {

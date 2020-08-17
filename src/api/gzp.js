@@ -6,7 +6,8 @@ const api = {
   gzpstoday: '/api/gzps/today',
   firms: '/api/firms',
   newgzpid: '/api/gzp/id/new',
-  newgzp: '/api/gzp/new'
+  newgzp: '/api/gzp/new',
+  weather: '/api/gzp/weather/now'
 }
 
 export default api
@@ -51,5 +52,12 @@ export function submitNewGzp (parameter) {
     headers: {
       'Content-Type': 'application/json;charset=UTF-8'
     }
+  })
+}
+
+export function getWeather () {
+  return request({
+    url: api.weather,
+    method: 'get'
   })
 }

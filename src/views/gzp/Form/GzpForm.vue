@@ -242,13 +242,80 @@
           </a-input-group>
         </a-form-model-item>
         <a-form-model-item
+          label="站内安全措施"
+          prop="safeM_in">
+          <a-input-group>
+            <a-row :gutter="[0,8]">
+              <a-col :span="24" v-for="safeM_in in form.safeMs_in" :key="safeM_in.id">
+                <a-row>
+                  <a-col :span="form.safeMs_in.length === 1 ? 24 : 21 "><a-input v-model="safeM_in.txt" ></a-input></a-col>
+                  <a-col :span="3"><a-icon
+                    v-if="form.safeMs_in.length > 1"
+                    class="dynamic-delete-button"
+                    type="minus-circle-o"
+                    :disabled="form.safeMs_in.length === 1"
+                    @click="removeSmiOption(safeM_in)"
+                  /></a-col>
+                </a-row>
+              </a-col>
+              <a-col :span="24">
+                <a-button type="dashed" style="width: 100%" @click="handleSmiAdd">
+                  <a-icon type="plus" /> 添加
+                </a-button>
+              </a-col>
+            </a-row>
+          </a-input-group>
+        </a-form-model-item>
+        <a-form-model-item
+          label="现场安全措施"
+          prop="safeM_out">
+          <a-input-group>
+            <a-row :gutter="[0,8]">
+              <a-col :span="24" v-for="safeM_out in form.safeMs_out" :key="safeM_out.id">
+                <a-row>
+                  <a-col :span="form.safeMs_out.length === 1 ? 24 : 21 "><a-input v-model="safeM_out.txt" ></a-input></a-col>
+                  <a-col :span="3"><a-icon
+                    v-if="form.safeMs_out.length > 1"
+                    class="dynamic-delete-button"
+                    type="minus-circle-o"
+                    :disabled="form.safeMs_out.length === 1"
+                    @click="removeSmoOption(safeM_out)"
+                  /></a-col>
+                </a-row>
+              </a-col>
+              <a-col :span="24">
+                <a-button type="dashed" style="width: 100%" @click="handleSmoAdd">
+                  <a-icon type="plus" /> 添加
+                </a-button>
+              </a-col>
+            </a-row>
+          </a-input-group>
+        </a-form-model-item>
+        <a-form-model-item label="任务统计" prop="statistics">
+          <a-select v-model="form.statistics">
+            <div slot="dropdownRender" slot-scope="menu">
+              <v-nodes :vnodes="menu" />
+              <a-divider style="margin: 4px 0;" />
+              <div
+                style="padding: 4px 8px; cursor: pointer;"
+                @mousedown="e => e.preventDefault()"
+                @click="addItem"
+              >
+                <a-icon type="plus" /> Add item
+              </div>
+            </div>
+            <a-select-option v-for="item in statistics" :key="item.id" :value="item">
+              {{ item.task + ': ' + item.num }}
+            </a-select-option>
+          </a-select>
+        </a-form-model-item>
+        <a-form-model-item
           style="text-align: center"
           :wrapper-col="{ span: 14, offset: 4 }"
         >
           <a-button @click="handleSubmit('form')" type="primary" :disabled="submitDisabled">提交</a-button>
           <a-button style="margin-left: 8px">保存</a-button>
         </a-form-model-item>
-
       </a-form-model>
     </a-card>
   </page-header-wrapper>
@@ -354,7 +421,19 @@ export default {
       firmFetching: false,
       // 工作负责人
       managerList: [],
-      managerFetching: false
+      managerFetching: false,
+      // 统计
+      statistics: [
+        {
+          task: '齿轮箱散热点击更换',
+          num: 24,
+          id: 1
+        },
+        {
+          task: '第三季度巡视',
+          num: 40,
+          id: 2
+        }]
     }
   },
   mounted () {
@@ -414,7 +493,45 @@ export default {
         return 'A' + i.slice(1).padStart(2, '0')
       })
       this.$set(this.form, 'wtId', Array.from(new Set(res)))
+    },
+    handleSmiAdd () {
+      this.form.safeMs_in.push({
+        id: this.form.safeMs_in.length + 1,
+        txt: ''
+      })
+    },
+    handleSmoAdd () {
+      this.form.safeMs_out.push({
+        id: this.form.safeMs_out.length + 1,
+        txt: ''
+      })
+    },
+    removeSmiOption (item) {
+      const index = this.form.safeMs_in.indexOf(item)
+      if (index !== -1) {
+        this.form.safeMs_in.splice(index, 1)
+      }
+    },
+    removeSmoOption (item) {
+      const index = this.form.safeMs_out.indexOf(item)
+      if (index !== -1) {
+        this.form.safeMs_out.splice(index, 1)
+      }
+    },
+    addItem () {
+      console.log('addItem')
     }
   }
 }
 </script>
+<style scoped>
+.dynamic-delete-button {
+  cursor: pointer;
+  position: relative;
+  top: 4px;
+  font-size: 24px;
+  color: #999;
+  transition: all 0.3s;
+  float: right;
+}
+</style>
